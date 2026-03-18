@@ -20,7 +20,12 @@ from mpl_toolkits.mplot3d import Axes3D
 
 #%% utility functions
 def show_cloud(points_plt):
-    ax = plt.axes(projection='3d')
+    #Need to modify for two plots to work
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    #ax = plt.axes(projection='3d')
     ax.scatter(points_plt[:,0], points_plt[:,1], points_plt[:,2], s=0.01)
     plt.show()
 
@@ -29,17 +34,27 @@ def show_scatter(x,y):
     plt.show()
 
 def get_ground_level(pcd):
-    return 64
+    z = pcd[:,2]
+
+    counts, bin_edges = np.histogram(z, bins=100) # Histogram
+    MAXbin = np.argmax(counts) # Highest amount of z values in one bin
+
+    ground_lvl = (bin_edges[MAXbin] + bin_edges[MAXbin + 1]) / 2 # GL calculated by taking the lowest and highest value of the bin with most z-values / 2.
+    # We take the interval between the Max Counted Z value
+    return ground_lvl
 
 
 #%% read file containing point cloud data
 pcd = np.load("dataset1.npy")
+pcd2 = np.load("dataset2.npy")
 
 pcd.shape
+pcd2.shape
 
 #%% show downsampled data in external window
 %matplotlib qt
 show_cloud(pcd)
+show_cloud(pcd2)
 #show_cloud(pcd[::10]) # keep every 10th point
 
 #%% remove ground plane
@@ -59,7 +74,36 @@ Add the histogram plots to your project readme
 est_ground_level = get_ground_level(pcd)
 print(est_ground_level)
 
-pcd_above_ground = pcd[pcd[:,2] > est_ground_level] 
+# Histogram plot D1
+z = pcd[:,2]
+plt.figure() 
+plt.hist(z, bins=100)
+plt.axvline(est_ground_level)
+plt.xlabel("Height (D1)")
+plt.ylabel("Num each hight")
+plt.title("Histogram of Z's (D1)")
+plt.savefig("Histogram_Dataset1")
+plt.show()
+
+pcd_above_ground = pcd[pcd[:,2] > est_ground_level] # For clustering task
+
+# Histogram plot D2
+est_ground_level2 = get_ground_level(pcd2)
+print(est_ground_level2)
+
+
+z2 = pcd2[:,2]
+plt.figure() # Ensure we plot different figures
+plt.hist(z2, bins=100)
+plt.axvline(est_ground_level2)
+plt.xlabel("Height (D2)")
+plt.ylabel("Num each hight")
+plt.title("Histogram of Z's (D2)")
+plt.savefig("Histogram_Dataset2")
+plt.show()
+
+pcd_above_ground2 = pcd2[pcd2[:,2] > est_ground_level2] # For clustering Task
+
 #%%
 pcd_above_ground.shape
 
